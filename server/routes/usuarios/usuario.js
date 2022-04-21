@@ -29,6 +29,41 @@ app.get('/',(req,res)=>{
     //return res.download(rutaDescarga,'documento.html')
 })
 
+app.get('/obtenerUsuario',(req,res)=>{
+
+const _idUsuario=parseInt(req.query._idUsuario);
+if(!_idUsuario){
+    return res.status(400).json({
+        ok:false,
+        msg:'No se recibio ningun ID',
+        cont:{
+            _idUsuario
+        }
+    })
+}
+const encontroUsuario = arrJsnUsuarios.find(usuario => usuario._id === _idUsuario);
+if(!encontroUsuario){
+    return res.status(400).json({
+        ok:false,
+        msg:'El usuario no existe',
+        cont:{
+            encontroUsuario
+        }
+    })
+}
+
+return res.status(200).json({
+    ok:true,
+    msg:'El usuario se encontro exitosamente',
+    cont:{
+        encontroUsuario
+    }
+})
+
+
+
+})
+
 app.post('/',(req,res)=> {
     const body= {
         strNombre: req.body.strNombre,
