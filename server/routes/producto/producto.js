@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express.Router();
 
-const arrJsnProductos = [{_id:1, strNombre:"", strDescripcion:"", nmbCantidad:0, nmbPrecio:0}]
+let arrJsnProductos = [{_id:1, strNombre:"", strDescripcion:"", nmbCantidad:0, nmbPrecio:0}]
 app.get('/',(req,res)=>{
     const arrProductos = arrJsnProductos;
     if(arrProductos.length<1)
@@ -68,7 +68,7 @@ app.post('/',(req,res)=>{
 
 
 app.put('/',(req,res)=>{
-    const _idProducto = parseInt(req.query._idProducto)
+    const _idProducto = parseInt(req.body._idProducto)
 
     if(!_idProducto)
     {
@@ -118,7 +118,7 @@ app.put('/',(req,res)=>{
 
 app.delete('/',(req,res)=>
 {
-    const _idProducto = parseInt(req.body._id);
+    const _idProducto = parseInt(req.query._idProducto);
 
     if(!_idProducto)
     {
@@ -134,7 +134,7 @@ app.delete('/',(req,res)=>
     }
 
     const encontroProducto = arrJsnProductos.find(producto => producto._id === _idProducto);
-        
+
     if (!encontroProducto)
     {
         return res.status(400).json
@@ -148,9 +148,7 @@ app.delete('/',(req,res)=>
             }) 
     }
 
-    const eliminarProducto = {_id:_idProducto, strNombre:req.body.strNombre, strDescripcion:req.body.strDescripcion, nmbCantidad:req.body.nmbCantidad, nmbPrecio: req.body.nmbPrecio }
-            
-    const filtrarProducto = arrJsnProductos.filter(producto => producto._id != _idProducto);
+   const filtrarProducto = arrJsnProductos.filter(producto => producto._id != _idProducto);
     
     arrJsnProductos = filtrarProducto;
 
@@ -160,7 +158,7 @@ app.delete('/',(req,res)=>
             msg:`El producto con el id: ${_idProducto} se elimino de manera exitosa`,
             cont:
             {
-                eliminarProducto
+                encontroProducto
             }
         }) 
 })
