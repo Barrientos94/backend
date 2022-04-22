@@ -1,6 +1,7 @@
 const express = require("express")
 const app = express.Router();
 const UsuarioModel = require('../../models/usuario/usuario.model');
+const bcrypt = require('bcrypt');
 
 app.get('/', async (req,res)=>{
     const obtenerUsuario = await UsuarioModel.find();
@@ -24,6 +25,53 @@ app.get('/', async (req,res)=>{
     
 
 })
+
+app.post('/', async (req,res)=>{
+    //ternario pregunta si algo existe ? (lo que pasa si existe) : (no existe);
+    const body = {...req.body,strContrasena: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10 ): undefined};
+    const bodyUsuario = new UsuarioModel(body);
+
+    console.log(bodyUsuario);
+
+
+
+const obtenerUsuario = await UsuarioModel.find({strEmail:body.strEmail});
+   
+
+
+ if(obtenerUsuario.length>0)
+ {
+    return res.status(400).json({
+        ok:false,
+       msg:'El email ya se encuentra registrado',
+        cont:{
+            body
+        }
+     })
+ }
+
+ const err = bodyUsuario.validateSync();
+ if(err)
+ {
+  return res.status(400).json({
+         ok:false,
+         msg:'Alguno de los campos requeridos no se envio',
+        cont:{
+             err
+         }
+   })
+ }
+const usuarioRegistrado = await bodyUsuario.save()
+ return res.status(200).json({
+    ok:true,
+    msg:'El usuario se a registrado de manera exitosa',
+   count: obtenerUsuario.length,
+   cont:{
+      usuarioRegistrado
+    }
+ })
+})
+
 
 // let arrJsnUsuarios= [{ _id: 1, strNombre: "", strApellido: "", strEmail:""}]
 //const path = require('path');
