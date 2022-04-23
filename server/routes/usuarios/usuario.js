@@ -15,11 +15,12 @@ app.get('/', async (req,res)=>{
     })
 }
 
+const datosUsuario = await UsuarioModel.find({},{strContrasena:0})
     return res.status(200).json({
                     ok:true,
                    msg:'Se encontraron los usuarios de manera exitosa',
                      cont:{
-                      obtenerUsuario
+                      datosUsuario
                    }
                 })
     

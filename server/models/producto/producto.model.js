@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-let SchemaProdcuto = mongoose.Schema({
+let SchemaProducto = mongoose.Schema({
     strNombre: {
         type: String,
         required:[true,'No se recibio el strNombre favor de ingresarlo']
@@ -16,4 +16,4 @@ let SchemaProdcuto = mongoose.Schema({
 
 })
 
-module.exports = mongoose.model('producto',SchemaProdcuto);
+module.exports = mongoose.model('producto',SchemaProducto);
