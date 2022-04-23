@@ -32,19 +32,30 @@ app.post('/', async (req,res)=>{
     const body = {...req.body,strContrasena: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10 ): undefined};
     const bodyUsuario = new UsuarioModel(body);
 
-    console.log(bodyUsuario);
 
 
 
-const obtenerUsuario = await UsuarioModel.find({strEmail:body.strEmail});
+const obtenerEmail = await UsuarioModel.find({strEmail:body.strEmail});
+const obtenerNombreUsuario = await UsuarioModel.find({strNombreUsuario:body.strNombreUsuario});
    
 
 
- if(obtenerUsuario.length>0)
+ if(obtenerEmail.length>0)
  {
     return res.status(400).json({
         ok:false,
        msg:'El email ya se encuentra registrado',
+        cont:{
+            body
+        }
+     })
+ }
+
+ if(obtenerNombreUsuario.length>0)
+ {
+    return res.status(400).json({
+        ok:false,
+       msg:'El nombre de usuario ya se encuentra registrado',
         cont:{
             body
         }
@@ -66,7 +77,7 @@ const usuarioRegistrado = await bodyUsuario.save()
  return res.status(200).json({
     ok:true,
     msg:'El usuario se a registrado de manera exitosa',
-   count: obtenerUsuario.length,
+   count: obtenerEmail.length,
    cont:{
       usuarioRegistrado
     }
