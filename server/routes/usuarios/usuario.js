@@ -144,11 +144,11 @@ app.put('/', async (req,res)=>{
 })
 
 
-app.delete('/',(req,res)=>{
+app.delete('/', async (req,res)=>{
     try
     {
         const _idUsuario = req.query._idUsuario;
-        const blnEstado =req.query.blnEstado="false" ? false : true;
+        const blnEstado =req.query.blnEstado=="false" ? false : true;
         if(!_idUsuario || _idUsuario.length != 24){
             return res.status(400).json({
                 ok: false,
@@ -158,17 +158,25 @@ app.delete('/',(req,res)=>{
                 }
             })
         }
+        const modificarEstadoUsuario =  await UsuarioModel.findOneAndUpdate({_id: _idUsuario},{$set:{blnEstado:blnEstado}},{new:true})
+
         return res.status(200).json({
             ok:true,
-            msg:'Se recibieron los valores de manera exitosa',
+            msg:blnEstado == true ? 'Se activo el usuario de manera exitosa' : 'Se desactivo el usaurio de manera exitosa',
             cont:{
-                _idUsuario: _idUsuario,
-                blnEstado: blnEstado
+              
+                modificarEstadoUsuario
             }
         })
     }
     catch(error){
-
+        return res.status(400).json({
+            ok: false,
+            msg:'Error en el servidor',
+            cont:{
+                error
+            }
+        })
     }
 })
 
