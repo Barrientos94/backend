@@ -3,29 +3,41 @@ const app = express.Router();
 const ProductoModel = require('../../models/producto/producto.model');
 
 app.get('/', async (req,res)=>{
-    const obtenerProductos = await ProductoModel.find();
-    //console.log(obetenerProductos);
-    if(obtenerProductos.length==0){
-        return res.status(400).json({
-            ok:false,
-            msg:'No se encontraron los productos en la base de datos',
+    try{
+        const obtenerProductos = await ProductoModel.find();
+        //console.log(obetenerProductos);
+        if(obtenerProductos.length==0){
+            return res.status(400).json({
+                ok:false,
+                msg:'No se encontraron los productos en la base de datos',
+                cont:{
+                 obtenerProductos
+                }
+            })
+        }
+        return res.status(200).json({
+            ok:true,
+            msg:'Se obtuvieron los productos de manera exitosa',
             cont:{
              obtenerProductos
             }
         })
+    }catch(error){
+        return res.status(400).json({
+            ok: false,
+            msg:'Error en el servidor',
+            cont:{
+                error
+            }
+        })
     }
-    return res.status(200).json({
-        ok:true,
-        msg:'Se obtuvieron los productos de manera exitosa',
-        cont:{
-         obtenerProductos
-        }
-    })
+    
 })
 
 
 app.post('/',async (req,res)=>{
-    const body = req.body;
+    try{
+        const body = req.body;
     const productoBody = new ProductoModel(body)
     const err = productoBody.validateSync();
     if(err){
@@ -37,7 +49,17 @@ app.post('/',async (req,res)=>{
             }
         })
     }
-
+    const encontroProducto = await ProductoModel.findOne({strNombre: body.strNombre},{strNombre:1});
+    if(encontroProducto)
+    {
+        return res.status(400).json({
+            ok:false,
+            msg: 'El producto ya se encuentra registrado en la base de datos',
+            cont:{
+                encontroProducto
+            }
+        })
+    }
     const productoRegistrado = await productoBody.save();
     return res.status(200).json({
         ok:true,
@@ -46,10 +68,123 @@ app.post('/',async (req,res)=>{
             productoRegistrado
         }
     })
+    }catch(error){
+        return res.status(400).json({
+            ok: false,
+            msg:'Error en el servidor',
+            cont:{
+                error
+            }
+        })
+    }
+    
 })
 
+app.put('/',async (req,res)=>{
+    try {
+const _idProducto = req.query._idProducto;
+if(!_idProducto || _idProducto.length != 24){
+    return res.status(400).json({
+        ok: false,
+        msg: _idProducto ? 'El identificador no es valido' : 'No se recibio el identificador',
+        cont:{
+            _idProducto
+        }
+    })
+}
+const encontroProducto = await ProductoModel.findOne({_id: _idProducto});
+if(!encontroProducto)
+{
+    return res.status(400).json({
+        ok: false,
+        msg: 'El producto no se encuentra registrado',
+        cont:{
+            encontroProducto
+        }
+    })
+}
+    //const actualizarProducto = await ProductoModel.updateOne({_id: _idProducto},{$set:{...req.body}});
+    const actualizarProducto = await ProductoModel.findByIdAndUpdate( _idProducto,{$set:{...req.body}},{new:true});
+
+    console.log(actualizarProducto);
+    if(!actualizarProducto)
+    {
+        return res.status(400).json({
+            ok: false,
+            msg:'El producto no se logro actualizar',
+            cont:{
+                ...req.body
+            }
+        })
+    }
+    return res.status(200).json({
+        ok:true,
+        msg:'El producto se actualizo de manera exitosa',
+        cont:{
+            productoAnterior: encontroProducto,
+            productoActual: req.body
+        }
+    })
+    }catch(error){
+        return res.status(400).json({
+            ok: false,
+            msg:'Error en el servidor',
+            cont:{
+                error
+            }
+        })
+    }
 
 
+})
+
+app.delete('/', async (req,res)=>{
+    const _idProducto = req.query._idProducto;
+    if(!_idProducto || _idProducto.length != 24)
+    {
+        return res.status(400).json({
+            ok: false,
+            msg: _idProducto ? 'El identificador  es invalido' : 'No se recibio un identificador',
+            cont:{
+                _idProducto
+            }
+        })
+    }
+    const encontroProducto = await ProductoModel.findOne({_id:_idProducto, blnEstado: true}); 
+    
+    if(!encontroProducto)
+    {
+        return res.status(400).json({
+            ok:false,
+            msg:'El identificado del producto no se encuentra en a la base de datos',
+            cont:{
+                _idProducto: _idProducto
+            }
+        })
+    }
+    //const eliminarProducto = await ProductoModel.findOneAndDelete({_id: _idProducto});
+    const desactivarProducto = await ProductoModel.findOneAndUpdate({_id: _idProducto}, {$set: {blnEstado:false}},{new:true})
+    if(!desactivarProducto){
+        return res.status(400).json({
+            ok:true,
+            msg:'El producto no se logro desactivar de la base de datos',
+            cont:{
+                desactivarProducto
+            }
+
+        })
+    }
+        return res.status(200).json({
+            ok:true,
+            msg:'El producto se desactivo de manera exitosa',
+            cont:{
+                desactivarProducto
+            }
+
+        })
+
+        
+})
 
 
 

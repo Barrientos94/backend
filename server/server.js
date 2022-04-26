@@ -17,5 +17,5 @@ mongoose.connect(process.env.URLDB, (err,resp)=>{
 
 
 app.listen(process.env.PORT, ()=>{
-    console.log('[NODE]'.green, 'esta corriendo en el puerto: '.red, (process.env.PORT).yellow);
+    console.log('[NODE]'.green, 'esta corriendo en el puerto: '.yellow, (process.env.PORT).yellow);
 });

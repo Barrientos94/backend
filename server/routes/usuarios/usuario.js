@@ -2,6 +2,8 @@ const express = require("express")
 const app = express.Router();
 const UsuarioModel = require('../../models/usuario/usuario.model');
 const bcrypt = require('bcrypt');
+const productoModel = require("../../models/producto/producto.model");
+const usuarioModel = require("../../models/usuario/usuario.model");
 
 app.get('/', async (req,res)=>{
     const obtenerUsuario = await UsuarioModel.find();
@@ -35,12 +37,12 @@ app.post('/', async (req,res)=>{
 
 
 
-const obtenerEmail = await UsuarioModel.find({strEmail:body.strEmail});
-const obtenerNombreUsuario = await UsuarioModel.find({strNombreUsuario:body.strNombreUsuario});
+const obtenerEmail = await UsuarioModel.findOne({strEmail:body.strEmail});
+const obtenerNombreUsuario = await UsuarioModel.findOne({strNombreUsuario:body.strNombreUsuario});
    
 
 
- if(obtenerEmail.length>0)
+ if(obtenerEmail)
  {
     return res.status(400).json({
         ok:false,
@@ -51,7 +53,7 @@ const obtenerNombreUsuario = await UsuarioModel.find({strNombreUsuario:body.strN
      })
  }
 
- if(obtenerNombreUsuario.length>0)
+ if(obtenerNombreUsuario)
  {
     return res.status(400).json({
         ok:false,
@@ -77,11 +79,97 @@ const usuarioRegistrado = await bodyUsuario.save()
  return res.status(200).json({
     ok:true,
     msg:'El usuario se a registrado de manera exitosa',
-   count: obtenerEmail.length,
+  
    cont:{
       usuarioRegistrado
     }
  })
+})
+
+app.put('/', async (req,res)=>{
+    try{
+        const _idUsuario = req.query._idUsuario;
+        if(!_idUsuario || _idUsuario.length != 24){
+            return res.status(400).json({
+                ok: false,
+                msg: _idUsuario ? 'El identificador no es valido' : 'No se recibio el identificador',
+                cont:{
+                    _idUsuario
+                }
+            })
+        }
+        const encontroUsuario = await usuarioModel.findOne({_id: _idUsuario});
+        if(!encontroUsuario)
+        {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El usuario no se encuentra registrado',
+                cont:{
+                    encontroUsuario
+                }
+            })
+        }
+        const actualizarUsuario = await UsuarioModel.findByIdAndUpdate(_idUsuario,{$set:{strNombre:req.body.strNombre, strApellido:req.body.strApellido, strDireccion:req.body.strDireccion}},{new:true});
+        console.log(actualizarUsuario);
+        if(!actualizarUsuario)
+        {
+            
+        return res.status(400).json({
+            ok: false,
+            msg:'El usuario no se logro actualizar',
+            cont:{
+                ...req.body
+            }
+        })
+        }
+        return res.status(200).json({
+            ok:true,
+            msg:'El usuario se actualizo de manera exitosa',
+            cont:{
+                usuarioAnterior: encontroUsuario,
+                usuarioActual: req.body
+            }
+        })
+
+    }
+    catch(error){
+        return res.status(400).json({
+            ok: false,
+            msg:'Error en el servidor',
+            cont:{
+                error
+            }
+        })
+    }
+})
+
+
+app.delete('/',(req,res)=>{
+    try
+    {
+        const _idUsuario = req.query._idUsuario;
+        const blnEstado =req.query.blnEstado="false" ? false : true;
+        if(!_idUsuario || _idUsuario.length != 24){
+            return res.status(400).json({
+                ok: false,
+                msg: _idUsuario ? 'El identificador no es valido' : 'No se recibio el identificador',
+                cont:{
+                    _idUsuario: _idUsuario
+                }
+            })
+        }
+        return res.status(200).json({
+            ok:true,
+            msg:'Se recibieron los valores de manera exitosa',
+            cont:{
+                _idUsuario: _idUsuario,
+                blnEstado: blnEstado
+            }
+        })
+    }
+    catch(error){
+
+    }
 })
 
 
