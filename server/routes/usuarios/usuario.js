@@ -4,9 +4,12 @@ const UsuarioModel = require('../../models/usuario/usuario.model');
 const bcrypt = require('bcrypt');
 const productoModel = require("../../models/producto/producto.model");
 const usuarioModel = require("../../models/usuario/usuario.model");
+const { off } = require("../../models/usuario/usuario.model");
 
 app.get('/', async (req,res)=>{
-    const obtenerUsuario = await UsuarioModel.find();
+    const blnEstado =req.query.blnEstado == "false" ? false : true;
+    const obtenerUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0});
+    
     if(obtenerUsuario == 0){
     return res.status(400).json({
         ok:false,
@@ -17,12 +20,12 @@ app.get('/', async (req,res)=>{
     })
 }
 
-const datosUsuario = await UsuarioModel.find({},{strContrasena:0})
+//const datosUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0})
     return res.status(200).json({
                     ok:true,
                    msg:'Se encontraron los usuarios de manera exitosa',
                      cont:{
-                      datosUsuario
+                      obtenerUsuario
                    }
                 })
     
@@ -89,6 +92,7 @@ const usuarioRegistrado = await bodyUsuario.save()
 app.put('/', async (req,res)=>{
     try{
         const _idUsuario = req.query._idUsuario;
+       
         if(!_idUsuario || _idUsuario.length != 24){
             return res.status(400).json({
                 ok: false,
@@ -98,7 +102,8 @@ app.put('/', async (req,res)=>{
                 }
             })
         }
-        const encontroUsuario = await usuarioModel.findOne({_id: _idUsuario});
+        const encontroUsuario = await usuarioModel.findOne({_id: _idUsuario,blnEstado:true});
+        console.log(encontroUsuario);
         if(!encontroUsuario)
         {
             return res.status(400).json({
@@ -109,8 +114,22 @@ app.put('/', async (req,res)=>{
                 }
             })
         }
-        const actualizarUsuario = await UsuarioModel.findByIdAndUpdate(_idUsuario,{$set:{strNombre:req.body.strNombre, strApellido:req.body.strApellido, strDireccion:req.body.strDireccion}},{new:true});
-        console.log(actualizarUsuario);
+        const encontroNombreUsuario= await UsuarioModel.findOne({strNombreUsuario: req.body.strNombreUsuario, _id:{$ne: _idUsuario}},{strNombre:1,strNombreUsuario:1})
+        if(encontroNombreUsuario)
+        {
+            return res.status(400).json({
+                ok:false,
+                msg:'El nombre de usuario ya se encuentra registrado en la base de datos',
+                cont:{
+                    encontroNombreUsuario
+                }
+            })
+        }
+    
+
+
+        const actualizarUsuario = await UsuarioModel.findByIdAndUpdate(_idUsuario,{$set:{strNombre:req.body.strNombre, strApellido:req.body.strApellido, strDireccion:req.body.strDireccion,strNombreUsuario:req.body.strNombreUsuario}},{new:true});
+        
         if(!actualizarUsuario)
         {
             
@@ -127,7 +146,7 @@ app.put('/', async (req,res)=>{
             msg:'El usuario se actualizo de manera exitosa',
             cont:{
                 usuarioAnterior: encontroUsuario,
-                usuarioActual: req.body
+                usuarioActual: actualizarUsuario
             }
         })
 
