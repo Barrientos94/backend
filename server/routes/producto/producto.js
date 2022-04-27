@@ -92,7 +92,7 @@ if(!_idProducto || _idProducto.length != 24){
         }
     })
 }
-const encontroProducto = await ProductoModel.findOne({_id: _idProducto});
+const encontroProducto = await ProductoModel.findOne({_id: _idProducto, blnEstado:true});
 if(!encontroProducto)
 {
     return res.status(400).json({
@@ -103,10 +103,22 @@ if(!encontroProducto)
         }
     })
 }
+
+const encontroNombreProducto = await ProductoModel.findOne({strNombre: req.body.strNombre, _id:{$ne:_idProducto}},{strNombre:1});
+if(encontroNombreProducto)
+{
+    return res.status(400).json({
+        ok:false,
+        msg:'El nombre del producto ya se encuentra registrado',
+        cont:{
+            encontroNombreProducto
+        }
+    })
+}
     //const actualizarProducto = await ProductoModel.updateOne({_id: _idProducto},{$set:{...req.body}});
     const actualizarProducto = await ProductoModel.findByIdAndUpdate( _idProducto,{$set:{...req.body}},{new:true});
 
-    console.log(actualizarProducto);
+    
     if(!actualizarProducto)
     {
         return res.status(400).json({
