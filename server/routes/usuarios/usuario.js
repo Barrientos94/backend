@@ -7,7 +7,8 @@ const { off } = require("../../models/usuario/usuario.model");
 
 app.get('/', async (req,res)=>{
     const blnEstado =req.query.blnEstado == "false" ? false : true;
-    const obtenerUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0});
+const obtenerUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0});
+    
     
     if(obtenerUsuario == 0){
     return res.status(400).json({
@@ -127,7 +128,7 @@ app.put('/', async (req,res)=>{
     
 
 
-        const actualizarUsuario = await UsuarioModel.findByIdAndUpdate(_idUsuario,{$set:{strNombre:req.body.strNombre, strApellido:req.body.strApellido, strDireccion:req.body.strDireccion,strNombreUsuario:req.body.strNombreUsuario}},{new:true});
+        const actualizarUsuario = await UsuarioModel.findByIdAndUpdate(_idUsuario,{$set:{strNombre:req.body.strNombre, strApellido:req.body.strApellido, strDireccion:req.body.strDireccion,strNombreUsuario:req.body.strNombreUsuario, idEmpresa:req.body.idEmpresa}},{new:true});
         
         if(!actualizarUsuario)
         {
