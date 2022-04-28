@@ -2,7 +2,6 @@ const express = require("express")
 const app = express.Router();
 const UsuarioModel = require('../../models/usuario/usuario.model');
 const bcrypt = require('bcrypt');
-const productoModel = require("../../models/producto/producto.model");
 const usuarioModel = require("../../models/usuario/usuario.model");
 const { off } = require("../../models/usuario/usuario.model");
 

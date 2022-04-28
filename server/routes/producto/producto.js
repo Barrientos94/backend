@@ -4,14 +4,27 @@ const ProductoModel = require('../../models/producto/producto.model');
 
 app.get('/', async (req,res)=>{
     try{
-        const obtenerProductos = await ProductoModel.find();
+        const blnEstado = req.query.blnEstado =="false" ? false: true;
+        const obtenerProductos = await ProductoModel.find({blnEstado:blnEstado});
         //console.log(obetenerProductos);
+
+        //funcion con aggregate
+
+        const obetenerProductosConAggregate = await ProductoModel.aggregate([
+           
+            {$match :{ $expr: {$eq:["$blnEstado",blnEstado] } }}
+           
+        ]);
+        
+
+
         if(obtenerProductos.length==0){
             return res.status(400).json({
                 ok:false,
                 msg:'No se encontraron los productos en la base de datos',
                 cont:{
-                 obtenerProductos
+                    obtenerProductos
+                 
                 }
             })
         }
@@ -19,7 +32,8 @@ app.get('/', async (req,res)=>{
             ok:true,
             msg:'Se obtuvieron los productos de manera exitosa',
             cont:{
-             obtenerProductos
+             obtenerProductos,
+             obetenerProductosConAggregate
             }
         })
     }catch(error){
