@@ -12,7 +12,8 @@ mongoose.connect(process.env.URLDB, (err,resp)=>{
         console.log('Error al conectar la base de datos'.red);
         return err
     }
-    console.log(`Base de datos ONLINE`, (process.env.URLDB).blue);
+
+        console.log(`Base de datos ONLINE`, (process.env.URLDB).blue);
 }) 
 
 
