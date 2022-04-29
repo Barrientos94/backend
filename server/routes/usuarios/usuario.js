@@ -3,20 +3,24 @@ const app = express.Router();
 const UsuarioModel = require('../../models/usuario/usuario.model');
 const bcrypt = require('bcrypt');
 const usuarioModel = require("../../models/usuario/usuario.model");
-const { off } = require("../../models/usuario/usuario.model");
+const {verificarAcceso}= require('../../middlewares/permisos');
 
-app.get('/', async (req,res)=>{
+
+
+app.get('/', verificarAcceso, async (req,res)=>{
     const blnEstado =req.query.blnEstado == "false" ? false : true;
 //const obtenerUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0});
 const obtenerUsuario = await UsuarioModel.aggregate([
-    {$match:{blnEstado:blnEstado}},
     {
-        $lookup: {
+        $match:{blnEstado:blnEstado}
+    },
+    {
+        $lookup:  {
             from:"empresas",
             localField:"idEmpresa",
             foreignField:"_id",
             as:"empresa"
-        }
+         }
     }
 ])
     
@@ -43,7 +47,7 @@ const obtenerUsuario = await UsuarioModel.aggregate([
 
 })
 
-app.post('/', async (req,res)=>{
+app.post('/', verificarAcceso, async (req,res)=>{
     //ternario pregunta si algo existe ? (lo que pasa si existe) : (no existe);
     const body = {...req.body,strContrasena: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10 ): undefined};
     const bodyUsuario = new UsuarioModel(body);
@@ -100,7 +104,7 @@ const usuarioRegistrado = await bodyUsuario.save()
  })
 })
 
-app.put('/', async (req,res)=>{
+app.put('/',verificarAcceso, async (req,res)=>{
     try{
         const _idUsuario = req.query._idUsuario;
        
@@ -174,7 +178,7 @@ app.put('/', async (req,res)=>{
 })
 
 
-app.delete('/', async (req,res)=>{
+app.delete('/',verificarAcceso, async (req,res)=>{
     try
     {
         const _idUsuario = req.query._idUsuario;
