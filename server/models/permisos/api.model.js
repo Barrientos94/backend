@@ -19,7 +19,7 @@ let schemaApi =new mongoose.Schema({
     },
     blnEsApi:{
         type:Boolean,
-        required: [true,'No se recibio el blnEsApi favor de ingresarlo']
+        default:true
     },
     blnEsMenu:{
         type:Boolean,

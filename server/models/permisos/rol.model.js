@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 let schemaRol =new mongoose.Schema({
+    blnEstado:{
+        type:Boolean,
+       default:true
+    },
 
     strNombre:{
         type:String,
@@ -16,8 +20,7 @@ let schemaRol =new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    arrObjIdApis:[]
-
+    arrObjIdApis:[mongoose.Types.ObjectId]
 })
 
 module.exports = mongoose.model('rol', schemaRol);
