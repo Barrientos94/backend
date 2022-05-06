@@ -12,10 +12,34 @@ app.get('/',async (req,res)=>{
 
             {
                 $match: {blnEstado: blnEstado}
+            },
+            {
+                $lookup:{
+                    from:'apis',
+                    let:{arrObjIdApis:'$arrObjIdApis'},
+                    pipeline:[
+                        //{$match:{blnEstado:true }}
+                        {$match:{$expr:{$in:['$_id','$$arrObjIdApis']}}},
+                        {
+                         $project: {
+                             strRuta:1,
+                             strMetodo:1
+                         }
+                        }
+                    
+                    ],
+                    as:'apis'
+                }
             }
         ])
 
-
+        res.status(200).json({
+            ok:true,
+            msg:'Se obtuvieron los roles exitosamente',
+            cont:{
+                obtenerRol
+            }
+        })
 
 
     }catch(error)
