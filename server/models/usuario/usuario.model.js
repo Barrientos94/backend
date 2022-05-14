@@ -34,7 +34,16 @@ let SchemaUsuario = mongoose.Schema({
         type: mongoose.Types.ObjectId,
         required:[true,'No se recibio el idEmpresa favor de ingresarlo']
       
+    },
+    strImagen:{
+        type: String,
+        default: 'default.jpg   '
+      
+    },
+    idObjRol:{
+        type:mongoose.Types.ObjectId,
     }
+    
     
 
 })

@@ -44,10 +44,13 @@ app.get('/',async (req,res)=>{
 
     }catch(error)
     {
-        return res.status(400).json({
-            ok:false, msg:'Error del servidor',
-            cont:{
-                error
+        const err = Error(error);
+        return res.status(500).json({
+            ok:false,
+            msg:'Error en el servidor',
+            cont:
+            {
+                err: err.message ? err.message : err.name ? err.name : err
             }
         })
     }

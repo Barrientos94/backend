@@ -2,13 +2,14 @@ const express = require("express")
 const app = express.Router();
 const UsuarioModel = require('../../models/usuario/usuario.model');
 const bcrypt = require('bcrypt');
-const usuarioModel = require("../../models/usuario/usuario.model");
 const {verificarAcceso}= require('../../middlewares/permisos');
-
+const cargaArchivo = require('../../library/cargarArchivos');
+const rolModel = require('../../models/permisos/rol.model');
 
 
 app.get('/', verificarAcceso, async (req,res)=>{
-    const blnEstado =req.query.blnEstado == "false" ? false : true;
+    try{
+        const blnEstado =req.query.blnEstado == "false" ? false : true;
 //const obtenerUsuario = await UsuarioModel.find({blnEstado:blnEstado},{strContrasena:0});
 const obtenerUsuario = await UsuarioModel.aggregate([
     {
@@ -43,20 +44,32 @@ const obtenerUsuario = await UsuarioModel.aggregate([
                       obtenerUsuario
                    }
                 })
+    }catch(err)
+    {
+        {
+            const err = Error(error);
+            return res.status(500).json({
+                ok:false,
+                msg:'Error en el servidor',
+                cont:
+                {
+                    err: err.message ? err.message : err.name ? err.name : err
+                }
+            })
+        }
+    }
+    
     
 
 })
 
-app.post('/', verificarAcceso, async (req,res)=>{
-    //ternario pregunta si algo existe ? (lo que pasa si existe) : (no existe);
+app.post('/', async (req,res)=>{
+    try{
+        //ternario pregunta si algo existe ? (lo que pasa si existe) : (no existe);
     const body = {...req.body,strContrasena: req.body.strContrasena ? bcrypt.hashSync(req.body.strContrasena, 10 ): undefined};
     const bodyUsuario = new UsuarioModel(body);
-
-
-
-
-const obtenerEmail = await UsuarioModel.findOne({strEmail:body.strEmail});
-const obtenerNombreUsuario = await UsuarioModel.findOne({strNombreUsuario:body.strNombreUsuario});
+    const obtenerEmail = await UsuarioModel.findOne({strEmail:body.strEmail});
+    const obtenerNombreUsuario = await UsuarioModel.findOne({strNombreUsuario:body.strNombreUsuario});
    
 
 
@@ -93,15 +106,45 @@ const obtenerNombreUsuario = await UsuarioModel.findOne({strNombreUsuario:body.s
          }
    })
  }
+ if(req.files){
+     if(!req.files.strImagen){
+        return res.status(400).json({
+            ok:false,
+           msg:'No se recibio un archivo strImagen, favor de ingresarlo',
+            cont:{
+                
+            }
+         })
+     }
+    
+    bodyUsuario.strImagen = await cargaArchivo.subirArchivo(req.files.strImagen,'usuario',['image/png', 'image/jpg','image/jpeg']);
+   
+ }
+if(!req.body.idObjRol){
+    const encontroRolDefault = await rolModel.findOne({blnRolDefault:true});
+    bodyUsuario.idObjRol = encontroRolDefault._id;
+}
+
 const usuarioRegistrado = await bodyUsuario.save()
  return res.status(200).json({
     ok:true,
     msg:'El usuario se a registrado de manera exitosa',
-  
    cont:{
       usuarioRegistrado
     }
  })
+    }catch(error)
+    {
+        const err = Error(error);
+        return res.status(500).json({
+            ok:false,
+            msg:'Error en el servidor',
+            cont:
+            {
+                err: err.message ? err.message : err.name ? err.name : err
+            }
+        })
+    }
 })
 
 app.put('/',verificarAcceso, async (req,res)=>{
@@ -117,7 +160,7 @@ app.put('/',verificarAcceso, async (req,res)=>{
                 }
             })
         }
-        const encontroUsuario = await usuarioModel.findOne({_id: _idUsuario,blnEstado:true});
+        const encontroUsuario = await UsuarioModel.findOne({_id: _idUsuario,blnEstado:true});
         
         if(!encontroUsuario)
         {
@@ -166,12 +209,15 @@ app.put('/',verificarAcceso, async (req,res)=>{
         })
 
     }
-    catch(error){
-        return res.status(400).json({
-            ok: false,
+    catch(error)
+    {
+        const err = Error(error);
+        return res.status(500).json({
+            ok:false,
             msg:'Error en el servidor',
-            cont:{
-                error
+            cont:
+            {
+                err: err.message ? err.message : err.name ? err.name : err
             }
         })
     }
@@ -203,17 +249,19 @@ app.delete('/',verificarAcceso, async (req,res)=>{
             }
         })
     }
-    catch(error){
-        return res.status(400).json({
-            ok: false,
+    catch(error)
+    {
+        const err = Error(error);
+        return res.status(500).json({
+            ok:false,
             msg:'Error en el servidor',
-            cont:{
-                error
+            cont:
+            {
+                err: err.message ? err.message : err.name ? err.name : err
             }
         })
     }
 })
-
 
 // let arrJsnUsuarios= [{ _id: 1, strNombre: "", strApellido: "", strEmail:""}]
 //const path = require('path');
