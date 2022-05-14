@@ -22,7 +22,33 @@ const obtenerUsuario = await UsuarioModel.aggregate([
             foreignField:"_id",
             as:"empresa"
          }
+    },
+    {
+            $lookup:{
+                from:'rols',
+                let:{idObjRol: '$idObjRol'},
+                pipeline:[
+                    {$match: {$expr: {$eq: ['$_id', '$$idObjRol']}}},
+                ],
+                as:'rol', 
+            }
+    },
+    {
+        $project:{
+            strNombre:1,
+            strApellido:1,
+            strEmail:1,
+            strDireccion: '$strDireccion',
+            empresa:{
+                $arrayElemAt:['$empresa',0]
+            },
+            rol:{
+                $arrayElemAt: ['$rol',0]
+            }
+        }
     }
+    
+    
 ])
     
     
